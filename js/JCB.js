@@ -57,28 +57,77 @@ JCB.prototype.getNeed = function() {
 		C: getRandomIntInRange(C_SRC_RANGE),
 	};
 
-	// 修改系统剩余资源
-	_.map(_need, function(value, key) {
-		restSRC[key] = value;
-	});
-
 	return _need;
 }
 
-/* 申请资源 随机增加已分配资源 */
-JCB.prototype.addAllocation = function(type) {
+/* 申请资源 随机增加已分配资源 并进行银行家安全性判断 */
+JCB.prototype.addAllocation = function() {
 	
-	// 所需资源数未满
-	if ( !this.isMax(type) ) {
+	var self = this;
 
-		// 增量申请的资源 选用 随机增量值 与 剩余所需资源 的 最小值。
-		var _increaseNum = Math.min(getRandomIntInRange(INCREASE_SRC_RANGE), this.need[type]);
+	// 增量申请的资源数
+	var _increase = {
+		A: 0,
+		B: 0,
+		C: 0,
+	};
 
-		this.allocation[type] += _increaseNum;
-		this.need[type] -= _increaseNum;
-		restSRC[type] -= _increaseNum; // 修改系统剩余资源
+	// Finish，表示系统是否有足够的资源分配给进程
+	var _isEnough = true,
+		notEnoughType = '',
+		isSafe = false;
+
+	_.map(['A','B','C'], function(type) {
+		
+		// 所需资源数未满
+		if ( !self.isMax(type) ) {
+
+			if (self.restTime === 1) { // 只剩最后一个时间片，则直接申请全部资源
+				_increase[type] = self.need[type];
+			} else {
+				// 增量申请的资源 选用 随机增量值 与 当前JCB剩余所需资源 的 最小值。
+				_increase[type] = Math.min(getRandomIntInRange(INCREASE_SRC_RANGE), self.need[type]);
+			}
+
+			// 系统剩余资源小于所需申请的资源，则修改 Finish。
+			if ( restSRC[type] < _increase[type] ) {
+				_isEnough = false;
+				notEnoughType = type;
+			}
+
+		}
+	});
+
+	// 足够分配，则进行银行家算法，再决定是否分配
+	if ( _isEnough ) {
+
+		if ( bankerCheck(_increase) ) {
+
+			isSafe = true;
+
+			_.map(['A','B','C'], function(type) {
+			
+				// 所需资源数未满，进行资源分配
+				if ( !self.isMax(type) ) {
+
+
+					self.allocation[type] += _increase[type]; // JCB Allocation
+					self.need[type] -= _increase[type]; // JCB Need
+					restSRC[type] -= _increase[type]; // 修改系统剩余资源
+
+				}
+			});
+		}
+		
 
 	}
+
+	return {
+		isEnough: _isEnough,
+		type: notEnoughType,
+		isSafe: isSafe,
+	};
+
 }
 
 /* 判断当前某类资源是否已经满足需求 */
@@ -107,8 +156,20 @@ JCB.prototype.freeRestSRC = function() {
 /* 判断当前作业资源需求是否小于或等于系统剩余资源 */
 JCB.prototype.isEnough = function() {
 
-	return !( ~_.indexOf( _.map(this.max, function(val, key) { return val <= restSRC[key]; }), 
-							false) );
+	var tag = {
+		isEnough: true,
+		type: '',
+	};
+
+	_.map(this.max, function(val, key) { 
+		if (val > restSRC[key]) {
+			tag.isEnough = false;
+			tag.type = key;
+		}
+
+	});
+
+	return tag;
 }
 
 
@@ -117,4 +178,31 @@ JCB.prototype.isEnough = function() {
 function getRandomIntInRange(range) {
 	// min ~ max
 	return Math.round(range[0] + Math.random() * range[1]);
+}
+
+
+
+/* 
+	银行家算法 
+	实现思路：每次至少分配2份资源（当时间片为1时，直接分配所需资源）
+*/
+function bankerCheck(increase) {
+	
+	var _finish = false;
+	var _work = _.cloneDeep(restSRC);
+
+	_.map(readyQueue.dataStore, function(item, key) {
+		if (key === 0) {
+
+		}
+
+		// 直接分配所需资源
+		if (item.restTime === 1) {
+
+		}
+
+	})
+
+
+	return true;
 }

@@ -61,6 +61,29 @@
 		},
 	});
 
+	var blockQueue_A_vm = new Vue({
+		el: '#block-queue-A',
+		data: {
+			items: blockQueue_A.dataStore,
+		}
+	});
+
+	var blockQueue_B_vm = new Vue({
+		el: '#block-queue-B',
+		data: {
+			items: blockQueue_B.dataStore,
+		}
+	});
+
+	var blockQueue_C_vm = new Vue({
+		el: '#block-queue-C',
+		data: {
+			items: blockQueue_C.dataStore,
+		}
+	});
+
+
+
 	var doneQueue_vm = new Vue({
 		el: '#done-queue',
 		data: {
@@ -104,34 +127,56 @@
 
 		/* 进入运行过程 */
 
-		// 执行总次数增加
-		system_vm.times++;
+		// @return { isEnough: Boolean, type: String, isSafe: Boolean } 
+		// isEnough 是否足够资源，足够时运行银行家算法
+		// type 不足资源时，哪类资源首先不足
+		// isSafe 足够资源时，银行家安全性算法，检查是否安全
+		var _status = front_JCB.addAllocation();
 
-		// 申请新的资源（已满则不会增加资源数）
-		front_JCB.addAllocation('A');
-		front_JCB.addAllocation('B');
-		front_JCB.addAllocation('C');
+		// 申请新的资源，新增成功返回 true，资源不足返回 fals（已满则不会增加资源数，并直接返回 true）
+		if ( _status.isEnough ) { // 资源足够，分配资源成功
 
-		// 减少时间片
-		if ( front_JCB.excute() ) { // 尚未执行完毕，重新入队
-			readyQueue.enqueue(front_JCB);
-		} else { // 执行完毕，当前 JCB 加入已完成队列，并从后备队列调入一个 JCB 进就绪队列
+			
+			if ( _status.isSafe ) { // 安全，执行时间片后入队
 
-			// 释放系统资源
-			front_JCB.freeRestSRC();
-			doneQueue.enqueue(front_JCB);
+				system_vm.times++; // 执行总次数增加
 
-			if ( backQueue.getLength() ) { // 后备队列还有任务则调入任务进就绪队列
+				/* excute() 方法用以模拟进程执行，对应进程剩余时间片减1 */
+				if ( front_JCB.excute() ) { // 尚未执行完毕
 
-				var new_JCB = backQueue.dequeue();
+					readyQueue.enqueue(front_JCB); // 重新入队
 
-				// if ( new_JCB.isEnough() ) {
-					readyQueue.enqueue( new_JCB );
-				// } else {
-					// append to next blockqueue
-				// }
+				} else { // 执行完毕
+
+					// 释放系统资源
+					front_JCB.freeRestSRC();
+					doneQueue.enqueue(front_JCB); // 当前 JCB 加入已完成队列
+
+					if ( backQueue.getLength() ) { // 后备队列还有任务则调入任务进就绪队列
+						var new_JCB = backQueue.dequeue(); // 从后备队列出队一个 JCB
+						readyQueue.enqueue( new_JCB ); // 从后备队列调入一个 JCB 进就绪队列
+					}
+				}
+				
+			} else { // 不安全，直接重新入队：就绪队列
+				readyQueue.enqueue(front_JCB); // 重新入队
+			}
+
+		} else { // 资源不足，进入阻塞队列
+			console.log('资源不足，进入阻塞队列：' + _status.type);
+			switch(_status.type) {
+				case 'A': 
+					blockQueue_A.enqueue(front_JCB);
+					break;
+				case 'B': 
+					blockQueue_B.enqueue(front_JCB);
+					break;
+				case 'C': 
+					blockQueue_C.enqueue(front_JCB);
+					break;
 			}
 		}
+
 	}
 
 
