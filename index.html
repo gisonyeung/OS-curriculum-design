@@ -3,11 +3,185 @@
 <head>
 	<meta charset="UTF-8">
 	<title>处理机调度模块</title>
+	<link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
+	<div class="section" id="system">
+		<h2 class="title">系统状态</h2>
+		<div class="cont">
+			<p class="row">
+				已分配系统资源：
+				A：<span class="less">{{ getCount('A') }}</span> / 50　
+				B：<span class="less">{{ getCount('B') }}</span> / 30　
+				C：<span class="less">{{ getCount('C') }}</span> / 40　
+			</p>
+			<p class="row">
+				已执行时间片：<span class="done">{{times}}</span>
+			</p>
+			<p class="row">
+				系统状态：<span class="done">安全</span>（银行家算法）
+			</p>
+			<p class="row">
+				操作：
+				<button type="button" class="btn" @click="next">执行1个时间片</button>
+				<button type="button" class="btn" @click="next10">执行10个时间片</button>
+				<button type="button" class="btn" @click="next100">执行100个时间片</button>
+				<button type="button" class="btn btn-success" @click="refresh">重置系统状态</button>
+			</p>
+
+		</div>
+	</div>
+	<div class="section" id="back-queue">
+		<h2 class="title">
+			<span>后备队列</span>
+			<div class="data-row">
+				队列长度：<span class="done">{{ items.length }}</span>　
+			</div>
+			<div class="handle">
+				<button 
+					type="button" 
+					class="btn"
+					:class="isHide ? 'btn-success' : ''"
+					@click="togglePanel">
+					{{ isHide ? '展开' : '隐藏' }}后备队列
+				</button>
+			</div>
+		</h2>
+		<ul class="queue clearfix" :class="{ hide: isHide }">
+			<li class="jcb" v-for="item in items" :key="item.id">
+				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">Max</p>
+						<p v-for="(value, key) in item.max">
+							{{key}}：{{value}}
+						</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">Allocation</p>
+						<p v-for="(value, key) in item.allocation">
+							{{key}}：<span :class="value === item.max[key] ? 'done' : 'less'">{{value}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">预计时间</p>
+						<p>{{item.planTime}}</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">已执行</p>
+						<p :class="item.restTime === 0 ? 'done' : 'less'">{{item.planTime - item.restTime}}</p>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div class="section" id="ready-queue">
+		<h2 class="title">
+			<span>就绪队列</span>
+			<div class="data-row">
+				队列长度：<span class="done">{{ items.length }}</span>　
+			</div>
+		</h2>
+		<ul class="queue clearfix">
+			<li class="jcb" v-for="item in items" :key="item.id">
+				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">Max</p>
+						<p v-for="(value, key) in item.max">
+							{{key}}：{{value}}
+						</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">Allocation</p>
+						<p v-for="(value, key) in item.allocation">
+							{{key}}：<span :class="value === item.max[key] ? 'done' : 'less'">{{value}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">预计时间</p>
+						<p>{{item.planTime}}</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">已执行</p>
+						<p :class="item.restTime === 0 ? 'done' : 'less'">{{item.planTime - item.restTime}}</p>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div class="section">
+		<h2 class="title">
+			<span>阻塞队列 A</span>
+			<div class="data-row">
+				队列长度：<span class="done">0</span>　
+			</div>
+		</h2>
+	</div>
+	<div class="section">
+		<h2 class="title">
+			<span>阻塞队列 B</span>
+			<div class="data-row">
+				队列长度：<span class="done">0</span>　
+			</div>
+		</h2>
+	</div>
+	<div class="section">
+		<h2 class="title">
+			<span>阻塞队列 C</span>
+			<div class="data-row">
+				队列长度：<span class="done">0</span>　
+			</div>
+		</h2>
+	</div>
+	<div class="section" id="done-queue">
+		<h2 class="title">
+			<span>完成队列</span>
+			<div class="data-row">
+				队列长度：<span class="done">{{ items.length }}</span>　
+			</div>
+		</h2>
+		<ul class="queue clearfix">
+			<li class="jcb" v-for="item in items" :key="item.id">
+				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">Max</p>
+						<p v-for="(value, key) in item.max">
+							{{key}}：{{value}}
+						</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">Allocation</p>
+						<p v-for="(value, key) in item.allocation">
+							{{key}}：<span :class="value === item.max[key] ? 'done' : 'less'">{{value}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="jcb-section">
+					<div class="jcb-widget">
+						<p class="jcb-title">预计时间</p>
+						<p>{{item.planTime}}</p>
+					</div>
+					<div class="jcb-widget">
+						<p class="jcb-title">已执行</p>
+						<p :class="item.restTime === 0 ? 'done' : 'less'">{{item.planTime - item.restTime}}</p>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+
+
+	
+	
+	<script src="./js/vue.js"></script>
 	<script src="./js/lodash.min.js"></script>
 	<script src="./js/util.js"></script>
-	<script src="./js/jquery-1.9.1.min.js"></script>
 	<script src="./js/JCB.js"></script>
 	<script src="./js/Queue.js"></script>
 	<script src="./js/index.js"></script>

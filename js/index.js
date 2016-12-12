@@ -1,4 +1,4 @@
-$(function() {
+// $(function() {
 
 	var JOB_SUM = 100; // 系统运行作业总数
 		
@@ -12,6 +12,72 @@ $(function() {
 		blockQueue_C = new Queue(), // 初始化 阻塞队列 C
 		doneQueue = new Queue(); // 初始化 已完成队列
 
+	var backQueue_vm = new Vue({
+		el: '#back-queue',
+		data: {
+			items: backQueue.dataStore,
+			isHide: true,
+
+		},
+		methods: {
+			togglePanel: function() {
+				this.isHide = !this.isHide;
+			}
+		}
+
+
+	});
+
+	var readyQueue_vm = new Vue({
+		el: '#ready-queue',
+		data: {
+			items: readyQueue.dataStore,
+		},
+	});
+
+
+
+	var system_vm = new Vue({
+		el: '#system',
+		data: {
+			items: readyQueue.dataStore,
+			times: 0,
+		},
+		methods: {
+			getCount: function(type) {
+				return _.sum(_.map(this.items, function(obj) {
+					return obj.allocation[type];
+				}));
+			},
+			next: function() {
+				nextStep(1);
+			},
+			next10: function() {
+				repeat(10, nextStep);
+			},
+			next100: function() {
+				repeat(100, nextStep);
+			},
+			refresh: function() {
+				window.location.reload();
+			},
+
+		},
+		computed: {
+			
+		}
+	});
+
+
+
+	var doneQueue_vm = new Vue({
+		el: '#done-queue',
+		data: {
+			items: doneQueue.dataStore,
+		}
+	});
+
+
 
 	// 将系统全部作业加进后备队列中
 	repeat(JOB_SUM, function() {
@@ -24,18 +90,32 @@ $(function() {
 	});
 
 
+
+
 	/*
 		模拟：循环执行就绪队列中的任务
 		跳出循环条件：就绪队列长度为 0 && 后备队列长度为 0
 	*/
-	while( readyQueue.getLength() || backQueue.getLength() ) {
+	// while( readyQueue.getLength() || backQueue.getLength() ) {
 
+		
+	// 	nextStep();
+	// 	// console.log(front_JCB.getRestSRC());
+
+	// }
+
+	function nextStep() {
 		var front_JCB = readyQueue.dequeue();
+
+		if ( !front_JCB ) {
+			return false;
+		}
 
 		/* 进入运行过程 */
 
 		// 执行总次数增加
-		process_times++;
+		// process_times++;
+		system_vm.times++;
 
 		// 申请新的资源（已满则不会增加资源数）
 		front_JCB.addAllocation('A');
@@ -45,7 +125,6 @@ $(function() {
 		// 减少时间片
 		if ( front_JCB.excute() ) { // 尚未执行完毕，重新入队
 			readyQueue.enqueue(front_JCB);
-
 		} else { // 执行完毕，当前 JCB 加入已完成队列，并从后备队列调入一个 JCB 进就绪队列
 
 			// 释放系统资源
@@ -63,14 +142,13 @@ $(function() {
 				// }
 			}
 		}
-
-		// console.log(front_JCB.getRestSRC());
-
 	}
+
+
 
 	// console.log(doneQueue.dataStore)
 
-	console.log(process_times);
+	// console.log(process_times);
 
 
 
@@ -85,5 +163,5 @@ $(function() {
 	
 
 
-});
+// });
 
