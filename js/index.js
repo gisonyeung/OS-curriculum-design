@@ -108,7 +108,6 @@
 		var front_JCB = readyQueue.dequeue();
 
 		if ( !front_JCB ) {
-			alert('全部系统作业已运行完毕')
 			return false;
 		}
 
