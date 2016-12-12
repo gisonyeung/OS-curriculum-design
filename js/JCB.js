@@ -107,10 +107,8 @@ JCB.prototype.freeRestSRC = function() {
 /* 判断当前作业资源需求是否小于或等于系统剩余资源 */
 JCB.prototype.isEnough = function() {
 
-	return !( ~_.indexOf( 
-					_.map(this.max, function(val, key) {
-					return val <= restSRC[key];
-				}), false));
+	return !( ~_.indexOf( _.map(this.max, function(val, key) { return val <= restSRC[key]; }), 
+							false) );
 }
 
 

@@ -2,9 +2,6 @@
 
 	var JOB_SUM = 100; // 系统运行作业总数
 		
-
-	var process_times = 0;
-	
 	var backQueue = new Queue(), // 初始化 后备队列
 		readyQueue = new Queue(), // 初始化 就绪队列
 		blockQueue_A = new Queue(), // 初始化 阻塞队列 A
@@ -35,13 +32,12 @@
 		},
 	});
 
-
-
 	var system_vm = new Vue({
 		el: '#system',
 		data: {
 			items: readyQueue.dataStore,
 			times: 0,
+			allTimes: 0,
 		},
 		methods: {
 			getCount: function(type) {
@@ -63,12 +59,7 @@
 			},
 
 		},
-		computed: {
-			
-		}
 	});
-
-
 
 	var doneQueue_vm = new Vue({
 		el: '#done-queue',
@@ -84,26 +75,26 @@
 		backQueue.enqueue( new JCB() );
 	});
 
+	var allTimes = 0;
+
+	// 统计总时间片
+	_.map(backQueue.dataStore, function(o) {
+		allTimes += o.planTime;
+	});
+
+	system_vm.allTimes = allTimes;
+
+
 	// 将作业从后备队列中调入 10 个作业进入系统
 	repeat(10, function() {
 		readyQueue.enqueue( backQueue.dequeue() );
 	});
 
 
-
-
 	/*
 		模拟：循环执行就绪队列中的任务
 		跳出循环条件：就绪队列长度为 0 && 后备队列长度为 0
 	*/
-	// while( readyQueue.getLength() || backQueue.getLength() ) {
-
-		
-	// 	nextStep();
-	// 	// console.log(front_JCB.getRestSRC());
-
-	// }
-
 	function nextStep() {
 		var front_JCB = readyQueue.dequeue();
 
@@ -114,7 +105,6 @@
 		/* 进入运行过程 */
 
 		// 执行总次数增加
-		// process_times++;
 		system_vm.times++;
 
 		// 申请新的资源（已满则不会增加资源数）
@@ -143,12 +133,6 @@
 			}
 		}
 	}
-
-
-
-	// console.log(doneQueue.dataStore)
-
-	// console.log(process_times);
 
 
 
