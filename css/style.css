@@ -45,6 +45,18 @@ ul {
   margin-right: 10px;
   width: 50px; }
 
+.console {
+  padding: 10px;
+  padding-left: 30px;
+  border-left: 3px solid #ccc;
+  background-color: #f6f6f6;
+  height: 200px;
+  font-size: 12px;
+  list-style-type: disc;
+  overflow: auto; }
+.console-item {
+  margin-bottom: 2px; }
+
 .done {
   color: #4CAF50; }
 
@@ -80,6 +92,25 @@ ul {
   border-color: #398439; }
 .btn:active {
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
+
+.form-control {
+  display: inline-block;
+  margin-bottom: 5px;
+  margin-right: 5px;
+  width: 60px;
+  max-width: 60px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: 0;
+  transition: border-color 0.2s ease-out;
+  -moz-transition: border-color 0.2s ease-out;
+  -webkit-transition: border-color 0.2s ease-out;
+  -o-transition: border-color 0.2s ease-out; }
+.form-control:focus {
+  border-color: #3A3A4F; }
 
 .clearfix, .jcb, .jcb-section {
   *zoom: 1; }

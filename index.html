@@ -6,32 +6,46 @@
 	<link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
+	<div class="section" id="init">
+	<h2 class="title">系统初始化</h2>
+	<div class="cont">
+		<p class="row">
+			任务数：
+			<input type="number" class="form-control" v-model="sum">
+			A 总量：
+			<input type="number" class="form-control" v-model="src.A">
+			B 总量：
+			<input type="number" class="form-control" v-model="src.B">
+			C 总量：
+			<input type="number" class="form-control" v-model="src.C">
+			<button type="button" class="btn btn-success" @click="refresh">重置系统状态</button>
+		</p>
+	</div>
+	</div>
 	<div class="section" id="system">
 		<h2 class="title">系统状态</h2>
 		<div class="cont">
 			<p class="row">
-				已分配系统资源：
-				A：<span class="less">{{ getCount('A') }}</span> / 50　
-				B：<span class="less">{{ getCount('B') }}</span> / 30　
-				C：<span class="less">{{ getCount('C') }}</span> / 40　
+				进程占用资源：
+				A：<span :class="rest.A === 0 ? 'done' : 'less'">{{ getCount('A') }}</span> / {{ src.A }}　
+				B：<span :class="rest.B === 0 ? 'done' : 'less'">{{ getCount('B') }}</span> / {{ src.B }}　
+				C：<span :class="rest.C === 0 ? 'done' : 'less'">{{ getCount('C') }}</span> / {{ src.C }}　
 			</p>
 			<p class="row">
 				已执行时间片：<span :class="times === allTimes ? 'done' : 'less'">{{ times }}</span> / {{ allTimes }}
 			</p>
+			<p class="row">系统信息（{{ systemMessage.length }}）：</p>
 			<p class="row">
-				阻塞队列：<span class="done">无任务</span>
-			</p>
-			<p class="row">
-				系统状态：<span class="done">安全</span>（银行家算法）
+				<ul class="console" id="console">
+					<li class="console-item" v-for="msg in systemMessage">{{ msg }}</li>
+				</ul>
 			</p>
 			<p class="row">
 				模拟操作：
 				<button type="button" class="btn" @click="next">执行1步</button>
 				<button type="button" class="btn" @click="next10">执行10步</button>
 				<button type="button" class="btn" @click="next100">执行100步</button>
-				<button type="button" class="btn btn-success" @click="refresh">重置系统状态</button>
 			</p>
-
 		</div>
 	</div>
 	<div class="section" id="back-queue">

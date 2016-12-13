@@ -34,13 +34,21 @@ Queue.prototype.back = function() {
 
 /* 显示队列内所有元素 */
 Queue.prototype.toString = function() {
-	return this.data.dataStore.join(', ');
+	return this.dataStore.join(', ');
 }
 
 /* 判断队列是否为空 */
 Queue.prototype.isEmpty = function() {
-	return this.data.dataStore.length === 0;
+	return this.dataStore.length === 0;
 }
+
+
+/* 清空队列 */
+Queue.prototype.empty = function() {
+	while( this.dequeue() ) {};
+}
+
+
 
 /* 队列长度 */
 Queue.prototype.getLength = function() {

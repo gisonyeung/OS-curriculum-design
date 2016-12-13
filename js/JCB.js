@@ -74,7 +74,7 @@ JCB.prototype.addAllocation = function() {
 
 	// Finish，表示系统是否有足够的资源分配给进程
 	var _isEnough = true,
-		notEnoughType = '',
+		// notEnoughType = '',
 		isSafe = false;
 
 	_.map(['A','B','C'], function(type) {
@@ -92,7 +92,7 @@ JCB.prototype.addAllocation = function() {
 			// 系统剩余资源小于所需申请的资源，则修改 Finish。
 			if ( restSRC[type] < _increase[type] ) {
 				_isEnough = false;
-				notEnoughType = type;
+				// notEnoughType = type;
 			}
 
 		}
@@ -124,7 +124,7 @@ JCB.prototype.addAllocation = function() {
 
 	return {
 		isEnough: _isEnough,
-		type: notEnoughType,
+		// type: notEnoughType,
 		isSafe: isSafe,
 	};
 
@@ -147,10 +147,10 @@ JCB.prototype.getRestSRC = function() {
 
 /* 释放系统剩余资源 */
 JCB.prototype.freeRestSRC = function() {
-	_.map(this.allocation, function(val, key) {
+	_.forEach(this.allocation, function(val, key) {
 		restSRC[key] += val;
 	});
-	return _.cloneDeep(restSRC);
+	return _.cloneDeep(this.allocation);
 }
 
 /* 判断当前作业资源需求是否小于或等于系统剩余资源 */
@@ -161,7 +161,7 @@ JCB.prototype.isEnough = function() {
 		type: '',
 	};
 
-	_.map(this.max, function(val, key) { 
+	_.forEach(this.max, function(val, key) { 
 		if (val > restSRC[key]) {
 			tag.isEnough = false;
 			tag.type = key;
@@ -184,25 +184,119 @@ function getRandomIntInRange(range) {
 
 /* 
 	银行家算法 
-	实现思路：每次至少分配2份资源（当时间片为1时，直接分配所需资源）
+	实现思路：每次分配 min(2,need) 份资源（当时间片为1时，直接分配所需资源）
 */
 function bankerCheck(increase) {
 	
-	var _finish = false;
+	var _isSafe = true, // 安全性检查结果标记值
+		_isFinish = false; // 迭代判断是否结束标记值
+
+	// 拷贝系统剩余资源副本
 	var _work = _.cloneDeep(restSRC);
 
-	_.map(readyQueue.dataStore, function(item, key) {
-		if (key === 0) {
+	// 拷贝就绪队列中除去目标进程的其他九个进程的副本 
+	var _copyQueue = _.slice(_.cloneDeep(readyQueue.dataStore), 1);
 
-		}
+	// 假设已经给目标进程分配资源
+	_.forEach(_work, function(val, type) {
+		_work[type] -= increase[type];
+	});
 
-		// 直接分配所需资源
-		if (item.restTime === 1) {
+	while ( !_isFinish ) {
+		_isFinish = true;
+		
+		_.forEach(_copyQueue, function(item) {
 
-		}
+			// 模拟分配资源，判断系统资源是否足够
+			var _isEnough = true;
 
-	})
+			// 时间片大于1，分配 min(2,need) 份资源
+			if (item.restTime > 1) {
 
+				// 分配的新资源数
+				var new_allocation = {
+					A: 0,
+					B: 0,
+					C: 0,
+				};
 
-	return true;
+				// 判断资源是否足够
+				_.forEach(item.need, function(val, type) {
+					if ( Math.min(val, 2) > _work[type] ) {
+						_isEnough = false;
+					} else {
+						// 分配 min(2,need) 份资源
+						new_allocation[type] = Math.min(val, 2);
+					}
+				});
+
+				// 资源足够，则尝试分配资源，并判断是否能够直接满足剩余所需全部资源顺利执行
+				if ( _isEnough ) {
+
+					// 判断此次分配资源是否能直接满足剩余所需资源
+					var _isFull = true;
+
+					// 尝试分配资源
+					_.forEach(item.allocation, function(val, type) {
+
+						_work[type] -= new_allocation[type]; // 减少系统剩余资源
+						item.need[type] -= new_allocation[type]; // 减少进程资源需求数
+						item.allocation[type] += new_allocation[type]; // 增加已分配数
+
+						// 尚不能填满
+						if ( item.need[type] !== 0 ) {
+							_isFull = false;
+						}
+					});
+
+					// 能填满资源，则直接释放资源，并将状态改为执行完毕
+					if ( _isFull ) {
+						// 释放资源
+						_.forEach(item.allocation, function(val, type) {
+							_work[type] += item.allocation[type];
+							item.allocation[type] = 0;
+						});
+						// 执行完毕（修改剩余时间片）
+						item.restTime = 0;
+					} else { // 不能填满资源，则减少一个时间片，并不释放资源
+						item.restTime--;
+						_isFinish = false; // 修改外部循环标记值，false 说明安全性算法还未结束，需要再次进行循环
+					}
+				
+				} else { // 资源不足够，则不可以顺利执行，此时可以判定安全性算法不通过，终止循环
+					return (_isSafe = false);
+				}
+
+			} else if (item.restTime === 1) { // 时间片剩最后一个，直接分配所需资源
+
+				_.forEach(item.need, function(val, type) {
+					if ( val > _work[type] ) {
+						_isEnough = false;
+					}
+				});
+
+				// 资源足够，则一定可以顺利执行，此时直接释放已占有的资源即可
+				if ( _isEnough ) {
+
+					// 释放资源
+					_.forEach(item.allocation, function(val, type) {
+						_work[type] += item.allocation[type];
+						item.allocation[type] = 0;
+					});
+
+					// 执行完毕（修改剩余时间片）
+					item.restTime = 0;
+				
+				} else { // 资源不足够，则不可以顺利执行，此时可以判定安全性算法不通过，终止循环
+					return (_isSafe = false);
+				}
+			} else if (item.restTime === 0) { // 时间片为 0，说明已执行完毕
+				// continue;
+			}
+
+		});
+
+	}
+
+	return _isSafe;
 }

@@ -125,6 +125,21 @@ ul {
 	}
 }
 
+.console {
+	padding: 10px;
+	padding-left: 30px;
+	border-left: 3px solid #ccc;
+	background-color: #f6f6f6;
+	height: 200px;
+	font-size: 12px;
+	list-style-type: disc;
+	overflow: auto;
+
+	&-item {
+		margin-bottom: 2px;
+	}
+}
+
 .done {
 	color: #4CAF50;
 }
@@ -172,6 +187,26 @@ ul {
 
     &:active {
 	    box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+	}
+}
+
+.form-control {
+	display: inline-block;
+	margin-bottom: 5px;
+	margin-right: 5px;
+	width: 60px;
+	max-width: 60px;
+	padding: 5px 10px;
+	border: 1px solid #ccc;
+	border-radius: 2px;
+	font-size: 14px;
+	font-family: inherit;
+	outline: 0;
+
+	@include transition($obj: border-color);
+
+	&:focus {
+	    border-color: #3A3A4F;
 	}
 }
 
