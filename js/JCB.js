@@ -46,7 +46,7 @@ JCB.prototype.getId = function() {
 JCB.prototype.getPlanTime = function() {
 	// Math.ceil() 向上取整，保证时间片足够分配资源
 	var _maxSrc = _.max( _.map(this.max, function(val) { return val }) ); // 取三个类型资源的最大需求值
-	return getRandomIntInRange([Math.ceil(_maxSrc / 2), RUNTIME_RANGE[1]]);
+	return getRandomIntInRange(RUNTIME_RANGE, Math.ceil(_maxSrc / 2));
 }
 
 /* 随机获取 资源需求 */
@@ -182,9 +182,15 @@ JCB.prototype.isEnough = function() {
 
 
 /* 获取指定范围内的随机整数 */
-function getRandomIntInRange(range) {
+function getRandomIntInRange(range, min) {
 	// min ~ max
-	return Math.round(range[0] + Math.random() * range[1]);
+	if ( min != undefined ) {
+		return Math.max(min, Math.round(range[0] + Math.random() * (range[1] - 1)));
+	} else {
+		return Math.round(range[0] + Math.random() * range[1]);
+	}
+
+	
 }
 
 
