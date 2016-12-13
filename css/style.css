@@ -47,6 +47,7 @@ ul {
   width: 50px; }
 
 .queue-animation-item {
+  background-color: #fff;
   transition: all 0.3s ease-out;
   -moz-transition: all 0.3s ease-out;
   -webkit-transition: all 0.3s ease-out;

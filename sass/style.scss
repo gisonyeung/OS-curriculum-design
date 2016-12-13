@@ -129,6 +129,7 @@ ul {
 
 .queue-animation {
 	&-item {
+		background-color: #fff;
 		@include transition($time: 0.3s);
 		top: 0;
 		left: 0;

@@ -5,6 +5,142 @@
 */
 
 
+
+/*
+	模拟：按步执行就绪队列中的任务
+*/
+function nextStep() {
+	var front_JCB = readyQueue.dequeue();
+
+	if ( !front_JCB ) {
+		return false;
+	}
+
+	/* 进入运行过程 */
+
+	/*
+		@return { isEnough: Boolean, isSafe: Boolean, isMax: Boolean} 
+		isEnough 是否足够资源，足够时运行银行家算法
+		isSafe 足够资源时，银行家安全性算法，检查是否安全
+		isMax 是否早已满足资源需求
+	*/
+	var _status = front_JCB.addAllocation();
+
+	
+	if ( _status.isEnough ) { // 资源足够，分配资源成功
+		_status.isMax ? // 早已满足资源需求，直接执行，调过进行银行家检查
+			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源已满，不需再进行分配，跳过银行家检查')
+			:
+			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源足够，准备进行银行家算法安全性检查');
+
+		if ( _status.isSafe ) { // 安全，执行时间片后入队
+			!_status.isMax && system_vm.echo('安全性检查通过，准备对进程[JCB - ' + front_JCB.id + ']进行资源分配并执行1个时间片')
+			/* excute() 方法用以模拟进程执行，对应进程剩余时间片减1 */
+			if ( front_JCB.excute() ) { // 尚未执行完毕
+
+				readyQueue.enqueue(front_JCB); // 重新入队
+
+			} else { // 执行完毕，释放系统资源，唤醒阻塞队列中全部任务
+
+				// 释放系统资源
+				front_JCB.freeRestSRC();
+				doneQueue.enqueue(front_JCB); // 当前 JCB 加入已完成队列
+
+				system_vm.echo('进程[JCB - ' + front_JCB.id + ']完成，进入完成队列');
+				_.forEach(front_JCB.allocation, function(val, type) {
+					system_vm.echo('释放 ' + type + ' 类资源：' + val);
+				});
+
+				nextBlockQueue.reset();
+
+				var isBlockQueueStillHasJob = true; // 用于清空阻塞队列中的任务
+
+				var _blockQueueJCB;
+				while ( isBlockQueueStillHasJob ) { // 阻塞队列有任务
+					
+					isBlockQueueStillHasJob = false;
+
+					// 有任务则顺序取出任务
+					if ( blockQueue[nextBlockQueue.current()].getLength() ) { // 有任务
+						 // 从当前阻塞调入一个 JCB 进就绪队列
+						_blockQueueJCB = blockQueue[nextBlockQueue.current()].dequeue();
+						readyQueue.enqueue( _blockQueueJCB );
+
+						system_vm.echo('唤醒阻塞队列[' + nextBlockQueue.current() +']中的进程[JCB - ' + _blockQueueJCB.id + ']');
+					}
+
+					// 判断阻塞队列是否还有任务
+					_.forEach(blockQueue, function(queue, type) {
+						if ( queue.getLength() ) {
+							isBlockQueueStillHasJob = true;
+						}
+					});
+
+					// 指针转向下一个阻塞队列
+					nextBlockQueue.next();
+					
+				}
+
+				// 释放资源
+				_blockQueueJCB = null;
+
+
+
+				// 重设指针，确保进入阻塞队列时能从 A 开始
+				nextBlockQueue.reset();
+
+				// 后备队列还有任务 则从后备队列调任务进就绪队列
+				if ( backQueue.getLength() ) {
+					var new_JCB = backQueue.dequeue();
+					readyQueue.enqueue( new_JCB ); // 从后备队列调入一个 JCB 进就绪队列
+					system_vm.echo('进程[JCB - ' + new_JCB.id + ']从后备队列进入就绪队列')
+				}
+			}
+
+			system_vm.times++; // 执行总次数增加
+
+		} else { // 不安全，直接重新入队：就绪队列
+			system_vm.echo('安全性检查不通过，进程[JCB - ' + front_JCB.id + ']直接进入就绪队列队尾');
+			readyQueue.enqueue(front_JCB); // 重新入队
+		}
+
+	} else { // 资源不足，按顺序进入阻塞队列
+			 // 资源释放时，按顺序出队
+		system_vm.echo('资源不足，将进程[JCB - ' + front_JCB.id + ']调入阻塞队列[' + nextBlockQueue.current() + ']');
+		blockQueue[nextBlockQueue.current()].enqueue(front_JCB);
+
+		nextBlockQueue.next()
+
+	}
+
+}
+
+// 用于顺序获取阻塞队列下一次的类型值。柯里化
+var nextBlockQueue = (function() {
+	var _current = 0;
+
+	return {
+		current: function() {
+			return String.fromCharCode(_current + 65);
+		},
+		next: function() {
+			_current = ++_current % 3
+			return String.fromCharCode(_current + 65);
+		},
+		reset: function() {
+			_current = 0;
+			return String.fromCharCode(_current + 65);
+		}
+	}
+})();
+
+
+
+
+
+
+
+
 var JOB_SUM = 100; // 系统运行作业总数
 	
 var backQueue = new Queue(), // 初始化 后备队列
@@ -163,6 +299,9 @@ function runSystem(jobSum, systemSrc){
 	// JCB 标识归零
 	JCB_ids = 0;
 
+	// 已执行时间片 归零
+	system_vm.times = 0;
+
 	// 清空控制台信息
 	system_vm.emptyMsg();
 
@@ -187,134 +326,4 @@ function runSystem(jobSum, systemSrc){
 
 }
 
-
-// 用于顺序获取阻塞队列下一次的类型值。柯里化
-var nextBlockQueue = (function() {
-	var _current = 0;
-
-	return {
-		current: function() {
-			return String.fromCharCode(_current + 65);
-		},
-		next: function() {
-			_current = ++_current % 3
-			return String.fromCharCode(_current + 65);
-		},
-		reset: function() {
-			_current = 0;
-			return String.fromCharCode(_current + 65);
-		}
-	}
-})();
-
-
-/*
-	模拟：循环执行就绪队列中的任务
-	跳出循环条件：就绪队列长度为 0 && 后备队列长度为 0
-*/
-function nextStep() {
-	var front_JCB = readyQueue.dequeue();
-
-	if ( !front_JCB ) {
-		return false;
-	}
-
-	/* 进入运行过程 */
-
-	/*
-		@return { isEnough: Boolean, isSafe: Boolean, isMax: Boolean} 
-		isEnough 是否足够资源，足够时运行银行家算法
-		isSafe 足够资源时，银行家安全性算法，检查是否安全
-		isMax 是否早已满足资源需求
-	*/
-	var _status = front_JCB.addAllocation();
-
-	
-	if ( _status.isEnough ) { // 资源足够，分配资源成功
-		_status.isMax ? // 早已满足资源需求，直接执行，调过进行银行家检查
-			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源已满，不需再进行分配，跳过银行家检查')
-			:
-			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源足够，准备进行银行家算法安全性检查');
-
-		if ( _status.isSafe ) { // 安全，执行时间片后入队
-			!_status.isMax && system_vm.echo('安全性检查通过，准备对进程[JCB - ' + front_JCB.id + ']进行资源分配并执行1个时间片')
-			/* excute() 方法用以模拟进程执行，对应进程剩余时间片减1 */
-			if ( front_JCB.excute() ) { // 尚未执行完毕
-
-				readyQueue.enqueue(front_JCB); // 重新入队
-
-			} else { // 执行完毕，释放系统资源，唤醒阻塞队列中全部任务
-
-				// 释放系统资源
-				front_JCB.freeRestSRC();
-				doneQueue.enqueue(front_JCB); // 当前 JCB 加入已完成队列
-
-				system_vm.echo('进程[JCB - ' + front_JCB.id + ']完成，进入完成队列');
-				_.forEach(front_JCB.allocation, function(val, type) {
-					system_vm.echo('释放 ' + type + ' 类资源：' + val);
-				});
-
-				nextBlockQueue.reset();
-
-				var isBlockQueueStillHasJob = true; // 用于清空阻塞队列中的任务
-
-				var _blockQueueJCB;
-				while ( isBlockQueueStillHasJob ) { // 阻塞队列有任务
-					
-					isBlockQueueStillHasJob = false;
-
-					// 有任务则顺序取出任务
-					if ( blockQueue[nextBlockQueue.current()].getLength() ) { // 有任务
-						 // 从当前阻塞调入一个 JCB 进就绪队列
-						_blockQueueJCB = blockQueue[nextBlockQueue.current()].dequeue();
-						readyQueue.enqueue( _blockQueueJCB );
-
-						system_vm.echo('唤醒阻塞队列[' + nextBlockQueue.current() +']中的进程[JCB - ' + _blockQueueJCB.id + ']');
-					}
-
-					// 判断阻塞队列是否还有任务
-					_.forEach(blockQueue, function(queue, type) {
-						if ( queue.getLength() ) {
-							isBlockQueueStillHasJob = true;
-						}
-					});
-
-					// 指针转向下一个阻塞队列
-					nextBlockQueue.next();
-					
-				}
-
-				// 释放资源
-				_blockQueueJCB = null;
-
-
-
-				// 重设指针，确保进入阻塞队列时能从 A 开始
-				nextBlockQueue.reset();
-
-				// 后备队列还有任务 则从后备队列调任务进就绪队列
-				if ( backQueue.getLength() ) {
-					var new_JCB = backQueue.dequeue();
-					readyQueue.enqueue( new_JCB ); // 从后备队列调入一个 JCB 进就绪队列
-					system_vm.echo('进程[JCB - ' + new_JCB.id + ']从后备队列进入就绪队列')
-				}
-			}
-
-			system_vm.times++; // 执行总次数增加
-
-		} else { // 不安全，直接重新入队：就绪队列
-			system_vm.echo('安全性检查不通过，进程[JCB - ' + front_JCB.id + ']直接进入就绪队列队尾');
-			readyQueue.enqueue(front_JCB); // 重新入队
-		}
-
-	} else { // 资源不足，按顺序进入阻塞队列
-			 // 资源释放时，按顺序出队
-		system_vm.echo('资源不足，将进程[JCB - ' + front_JCB.id + ']调入阻塞队列[' + nextBlockQueue.current() + ']');
-		blockQueue[nextBlockQueue.current()].enqueue(front_JCB);
-
-		nextBlockQueue.next()
-
-	}
-
-}
 
