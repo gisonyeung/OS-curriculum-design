@@ -112,6 +112,25 @@ ul {
 .form-control:focus {
   border-color: #3A3A4F; }
 
+.author {
+  padding-left: 35px;
+  padding-bottom: 30px;
+  list-style-type: circle; }
+.author-item {
+  margin-bottom: 5px; }
+.author a {
+  color: #03a9f4; }
+
+.intro {
+  padding-left: 35px;
+  list-style-type: circle; }
+.intro-item {
+  margin-bottom: 5px; }
+.intro a {
+  color: #03a9f4; }
+.intro strong {
+  color: #2196f3; }
+
 .clearfix, .jcb, .jcb-section {
   *zoom: 1; }
 .clearfix:after, .jcb:after, .jcb-section:after {

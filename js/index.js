@@ -1,3 +1,9 @@
+/*
+
+	@author 3114006311杨子聪 https://github.com/gisonyeung/OS-curriculum-design
+
+*/
+
 
 var JOB_SUM = 100; // 系统运行作业总数
 	

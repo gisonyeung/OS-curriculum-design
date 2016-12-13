@@ -210,6 +210,40 @@ ul {
 	}
 }
 
+.author {
+	padding-left: 35px;
+	padding-bottom: 30px;
+	list-style-type: circle;
+
+	&-item {
+		margin-bottom: 5px;
+	}
+
+	a {
+		color: #03a9f4;
+	}
+}
+
+
+.intro {
+	padding-left: 35px;
+	list-style-type: circle;
+
+	&-item {
+		margin-bottom: 5px;
+	}
+
+	a {
+		color: #03a9f4;
+	}
+
+	strong {
+		color: #2196f3;
+	}
+}
+
+
+
 
 .clearfix {
 	*zoom: 1;

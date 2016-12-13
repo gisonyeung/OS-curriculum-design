@@ -1,5 +1,8 @@
 /*
+
 	队列 类封装与实现
+	@author 3114006311杨子聪 https://github.com/gisonyeung/OS-curriculum-design
+	
 */
 
 

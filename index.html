@@ -10,6 +10,31 @@
 	<h2 class="title">系统初始化</h2>
 	<div class="cont">
 		<p class="row">
+			系统说明：
+		</p>
+		<p class="row">
+			<ul class="intro">
+				<li class="intro-item">
+					系统名称：<strong>处理机调度模块</strong>
+				</li>
+				<li class="intro-item">
+					实现处理机调度模块功能。包含二级调度，作业调度采用先来先服务策略，进程调度采用时间片轮转调度算法，资源分配采用银行家算法避免死锁，JavaScript 实现。
+				</li>
+				<li class="intro-item">
+					为每个进入后备队列的作业创建一个JCB，内容包括：<strong>作业标识</strong>、<strong>预计运行时间</strong>、<strong>资源需求</strong>等。其中预计运行时间和资源需求随机生成（1—20个时间片，A资源0-5，B资源0-3，C资源0-4）
+				</li>
+				<li class="intro-item">
+					时间片充足的情况下，每个进程申请各类资源的数目不超过系统资源总数的<strong>1/2</strong>。
+				</li>
+				<li class="intro-item">
+					进程在运行过程中（即每个时间片内），<strong>可能会申请新的资源，数量随机（申请的各类资源个数均不超过2）</strong>。用银行家算法控制资源的分配，避免死锁。
+				</li>
+				<li class="intro-item">
+					资源不够时将进程顺序分配到阻塞队列中，释放资源时按阻塞先后顺序唤醒进程。
+				</li>
+			</ul>
+		</p>
+		<p class="row">
 			任务数：
 			<input type="number" class="form-control" v-model="sum">
 			A 总量：
@@ -278,6 +303,18 @@
 				</div>
 			</li>
 		</ul>
+	</div>
+	<div class="section">
+		<h2 class="title">作者信息</h2>
+		<div class="cont">
+			<ul class="author">
+				<li class="author-item">学校：广东工业大学</li>
+				<li class="author-item">班级：2014 级软件工程（4）班</li>
+				<li class="author-item">学号：3114006311</li>
+				<li class="author-item">姓名：杨子聪</li>
+				<li class="author-item">源码托管：<a href="https://github.com/gisonyeung/OS-curriculum-design" target="_blank">https://github.com/gisonyeung/OS-curriculum-design</a></li>
+			</ul>
+		</div>
 	</div>
 
 	<!-- MVC框架 用于页面构建 -->

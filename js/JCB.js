@@ -1,6 +1,7 @@
 /*
 
 	JCB 类的实现与封装
+	@author 3114006311杨子聪 https://github.com/gisonyeung/OS-curriculum-design
 
 */
 
@@ -85,8 +86,12 @@ JCB.prototype.addAllocation = function() {
 			if (self.restTime === 1) { // 只剩最后一个时间片，则直接申请全部资源
 				_increase[type] = self.need[type];
 			} else {
-				// 增量申请的资源 选用 随机增量值 与 当前JCB剩余所需资源 的 最小值。
-				_increase[type] = Math.min(getRandomIntInRange(INCREASE_SRC_RANGE), self.need[type]);
+				// 增量申请的资源 选用 （随机增量值 与 当前JCB剩余所需资源 与 系统总资源的二分之一） 的最小值。
+				_increase[type] = Math.min(
+					getRandomIntInRange(INCREASE_SRC_RANGE), 
+					self.need[type], 
+					Math.floor(system_vm.src[type] / 2) // 题目要求：每个进程申请各类资源的数目不能超过系统资源总数的二分之一
+				);
 			}
 
 			// 系统剩余资源小于所需申请的资源，则修改 Finish。
