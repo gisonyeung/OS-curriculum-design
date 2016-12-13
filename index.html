@@ -90,7 +90,8 @@
 			</div>
 		</h2>
 		<ul class="queue clearfix" :class="{ hide: isHide }">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" :class="{ hide: isHide }" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -117,7 +118,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section" id="ready-queue">
 		<h2 class="title">
@@ -126,8 +127,8 @@
 				队列长度：<span class="done">{{ items.length }}</span>　
 			</div>
 		</h2>
-		<ul class="queue clearfix">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -154,7 +155,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section" id="block-queue-A">
 		<h2 class="title">
@@ -163,8 +164,8 @@
 				队列长度：<span class="done">{{ items.length }}</span>　
 			</div>
 		</h2>
-		<ul class="queue clearfix">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -191,7 +192,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section" id="block-queue-B">
 		<h2 class="title">
@@ -200,8 +201,8 @@
 				队列长度：<span class="done">{{ items.length }}</span>　
 			</div>
 		</h2>
-		<ul class="queue clearfix">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -228,7 +229,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section" id="block-queue-C">
 		<h2 class="title">
@@ -237,8 +238,8 @@
 				队列长度：<span class="done">{{ items.length }}</span>　
 			</div>
 		</h2>
-		<ul class="queue clearfix">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -265,7 +266,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section" id="done-queue">
 		<h2 class="title">
@@ -274,8 +275,8 @@
 				队列长度：<span class="done">{{ items.length }}</span>　
 			</div>
 		</h2>
-		<ul class="queue clearfix">
-			<li class="jcb" v-for="item in items" :key="item.id">
+		<transition-group tag="ul" class="queue clearfix" name="queue-animation">
+			<li class="jcb queue-animation-item" v-for="item in items" :key="item.id">
 				<p class="jcb-id">JCB - <strong>{{item.id}}</strong></p>
 				<div class="jcb-section">
 					<div class="jcb-widget">
@@ -302,7 +303,7 @@
 					</div>
 				</div>
 			</li>
-		</ul>
+		</transition-group>
 	</div>
 	<div class="section">
 		<h2 class="title">作者信息</h2>

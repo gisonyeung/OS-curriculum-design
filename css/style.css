@@ -29,6 +29,7 @@ ul {
   display: none; }
 
 .jcb {
+  position: relative;
   float: left;
   margin: 0 5px 5px 0;
   padding: 5px;
@@ -44,6 +45,24 @@ ul {
   float: left;
   margin-right: 10px;
   width: 50px; }
+
+.queue-animation-item {
+  transition: all 0.3s ease-out;
+  -moz-transition: all 0.3s ease-out;
+  -webkit-transition: all 0.3s ease-out;
+  -o-transition: all 0.3s ease-out;
+  top: 0;
+  left: 0;
+  opacity: 1; }
+.queue-animation-enter, .queue-animation-leave {
+  top: 0;
+  left: 0;
+  opacity: 1; }
+.queue-animation-enter-active, .queue-animation-leave-active {
+  top: 0;
+  left: 50px;
+  opacity: 0;
+  boder-color: #009688; }
 
 .console {
   padding: 10px;
