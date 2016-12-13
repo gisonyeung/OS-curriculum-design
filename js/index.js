@@ -222,17 +222,22 @@ function nextStep() {
 	/* 进入运行过程 */
 
 	/*
-		@return { isEnough: Boolean, isSafe: Boolean } 
+		@return { isEnough: Boolean, isSafe: Boolean, isMax: Boolean} 
 		isEnough 是否足够资源，足够时运行银行家算法
 		isSafe 足够资源时，银行家安全性算法，检查是否安全
+		isMax 是否早已满足资源需求
 	*/
 	var _status = front_JCB.addAllocation();
 
-	// 申请新的资源，新增成功返回 true，资源不足返回 fals（已满则不会增加资源数，并直接返回 true）
+	
 	if ( _status.isEnough ) { // 资源足够，分配资源成功
-		system_vm.echo('资源足够，准备进行银行家算法安全性检查');
+		_status.isMax ? // 早已满足资源需求，直接执行，调过进行银行家检查
+			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源已满，不需再进行分配，跳过银行家检查')
+			:
+			system_vm.echo('进程[JCB - ' + front_JCB.id + ']所需资源足够，准备进行银行家算法安全性检查');
+
 		if ( _status.isSafe ) { // 安全，执行时间片后入队
-			system_vm.echo('安全性检查通过，准备对进程[JCB - ' + front_JCB.id + ']进行资源分配并执行1个时间片')
+			!_status.isMax && system_vm.echo('安全性检查通过，准备对进程[JCB - ' + front_JCB.id + ']进行资源分配并执行1个时间片')
 			/* excute() 方法用以模拟进程执行，对应进程剩余时间片减1 */
 			if ( front_JCB.excute() ) { // 尚未执行完毕
 

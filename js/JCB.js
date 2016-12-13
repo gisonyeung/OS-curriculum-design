@@ -76,13 +76,14 @@ JCB.prototype.addAllocation = function() {
 	// Finish，表示系统是否有足够的资源分配给进程
 	var _isEnough = true,
 		// notEnoughType = '',
-		isSafe = false;
+		isSafe = false,
+		isMax = true;
 
 	_.map(['A','B','C'], function(type) {
 		
 		// 所需资源数未满
 		if ( !self.isMax(type) ) {
-
+			isMax = false;
 			if (self.restTime === 1) { // 只剩最后一个时间片，则直接申请全部资源
 				_increase[type] = self.need[type];
 			} else {
@@ -131,6 +132,7 @@ JCB.prototype.addAllocation = function() {
 		isEnough: _isEnough,
 		// type: notEnoughType,
 		isSafe: isSafe,
+		isMax: isMax,
 	};
 
 }
